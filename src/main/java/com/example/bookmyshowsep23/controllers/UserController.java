@@ -12,7 +12,7 @@ import org.springframework.stereotype.Controller;
 public class UserController {
     private UserService userService;
 
-    UserController(UserService userService) {
+    public UserController(UserService userService) {
         this.userService = userService;
     }
 

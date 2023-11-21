@@ -3,6 +3,7 @@ package com.example.bookmyshowsep23.services;
 import com.example.bookmyshowsep23.exceptions.InvalidUserException;
 import com.example.bookmyshowsep23.models.User;
 import com.example.bookmyshowsep23.repositories.UserRepository;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -20,19 +21,26 @@ public class UserService {
 
         //If the user is present in the DB then go to login workflow else call the signUp workflow.
         if (optionalUser.isPresent()) {
-            return login(emailId, password);
+            login(emailId, password);
         }
 
         User user = new User();
         user.setBookings(new ArrayList<>());
         user.setEmail(emailId);
-        user.setPassword(password);
+
+        //Before we store the password to DB we should encrypt it using BCryptEncoder.
+        BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
+        user.setPassword(bCryptPasswordEncoder.encode(password));
 
         //save the user to DB.
         return userRepository.save(user);
     }
 
-    public User login(String emailId, String password) {
-        return null;
+    public boolean login(String emailId, String password) {
+        Optional<User> optionalUser = userRepository.findByEmail(emailId);
+
+        String passwordStoredInDB = optionalUser.get().getPassword();
+        BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
+        return bCryptPasswordEncoder.matches(password, passwordStoredInDB);
     }
 }
